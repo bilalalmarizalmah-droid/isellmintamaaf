@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maafin Aku Ya ❤️</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti for Love Explosion -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Quicksand & Sacramento for aesthetic handwriting style -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelPink: '#ffd1dc',
+                        softPink: '#ff9ebb',
+                        hotPink: '#ff477e',
+                        deepRose: '#d81b60',
+                        glassBg: 'rgba(255, 255, 255, 0.75)',
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', 'sans-serif'],
+                        cursive: ['Sacramento', 'cursive'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #ffe4e1 0%, #ffd1dc 50%, #fecfef 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Glassmorphism Effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 40px rgba(255, 71, 126, 0.15);
+        }
+
+        /* Floating Items Animation from Bottom */
+        .floating-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .floating-item {
+            position: absolute;
+            bottom: -60px;
+            font-weight: 700;
+            color: #ff477e;
+            white-space: nowrap;
+            opacity: 0.85;
+            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.9);
+            animation: floatUpAnimation linear forwards;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        @keyframes floatUpAnimation {
+            0% {
+                transform: translateY(0) scale(0.8) rotate(0deg);
+                opacity: 0;
+            }
+            15% {
+                opacity: 0.85;
+            }
+            85% {
+                opacity: 0.85;
+            }
+            100% {
+                transform: translateY(-115vh) scale(1.1) rotate(25deg);
+                opacity: 0;
+            }
+        }
+
+        /* Cute Pulsing Heart Animation */
+        .heart-pulse {
+            animation: heartPulse 1.4s infinite ease-in-out;
+        }
+
+        @keyframes heartPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* Custom Photo Frame Glow */
+        .photo-frame {
+            box-shadow: 0 10px 25px rgba(255, 71, 126, 0.25);
+            transition: all 0.3s ease;
+        }
+        .photo-frame:hover {
+            transform: scale(1.02) rotate(-1deg);
+        }
+
+        /* Evasion Button Smooth Transition */
+        #btn-no {
+            transition: left 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        top 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        transform 0.15s ease;
+            will-change: left, top;
+        }
+
+        /* Custom Scrollbar for Drawer */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ff9ebb;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800 flex flex-col justify-between items-center relative min-h-screen p-4 select-none">
+
+    <!-- Background Floating Container -->
+    <div id="floating-container" class="floating-container"></div>
+
+    <!-- Top Action Bar (Audio Control & Customization Trigger) -->
+    <header class="w-full max-w-md flex justify-between items-center z-20 pt-2 px-2">
+        <div class="flex items-center gap-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-sm border border-pink-200">
+            <span class="text-xs font-bold text-hotPink flex items-center gap-1">
+                <i class="fa-solid fa-heart text-xs text-hotPink heart-pulse"></i> For You
+            </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Audio Toggle Button -->
+            <button id="btn-audio" onclick="toggleAudio()" class="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-md border border-pink-200 text-hotPink flex justify-center items-center hover:bg-pink-100 active:scale-95 transition-all">
+                <i id="audio-icon" class="fa-solid fa-music"></i>
+            </button>
+            <!-- Settings Panel Toggle Button -->
+            <button onclick="toggleSettingsModal()" class="w-10 h-10 rounded-full bg-white/80 backdrop-blur-md shadow-md border border-pink-200 text-hotPink flex justify-center items-center hover:bg-pink-100 active:scale-95 transition-all" title="Ubah Foto & Musik">
+                <i class="fa-solid fa-sliders"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Interactive Card Container -->
+    <main class="w-full max-w-md my-auto z-10 py-6">
+        
+        <!-- CARD 1: HALAMAN PERMINTAAN MAAF -->
+        <div id="card-apology" class="glass-card rounded-3xl p-6 sm:p-8 text-center relative overflow-hidden transition-all duration-500 transform scale-100">
+            
+            <!-- Badge / Decorative Top -->
+            <div class="inline-block bg-pink-100/90 text-hotPink text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-pink-200 shadow-sm">
+                <i class="fa-solid fa-envelope-open-heart mr-1"></i> Ada pesan untukmu...
+            </div>
+
+            <!-- Foto Pertama -->
+            <div class="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto mb-5 rounded-2xl p-2 bg-white photo-frame border-2 border-pink-200">
+                <img id="img-photo1" 
+                     src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=600&auto=format&fit=crop" 
+                     alt="Foto Permintaan Maaf" 
+                     class="w-full h-full object-cover rounded-xl shadow-inner">
+                <div class="absolute -bottom-3 -right-3 bg-white w-10 h-10 rounded-full flex justify-center items-center text-hotPink shadow-md text-lg">
+                    🥺
+                </div>
+            </div>
+
+            <!-- Teks Permintaan Maaf -->
+            <h1 class="text-2xl sm:text-3xl font-bold text-hotPink mb-2 tracking-tight">
+                Maafin aku ya? <span class="inline-block heart-pulse">❤️</span>
+            </h1>
+            <p id="text-apology" class="text-sm sm:text-base text-gray-600 mb-6 leading-relaxed font-medium">
+                Aku tau aku bikin kamu kesel & kecewa. Aku janji bakal lebih ngertiin kamu dan ga ngulangin lagi. Beneran deh... Jangan marah lagi ya sayang? 🥺
+            </p>
+
+            <!-- Tombol Interaksi -->
+            <div id="button-wrapper" class="relative min-h-[60px] flex justify-center items-center gap-4 mt-2">
+                <!-- Tombol "Dimaafkan" -->
+                <button id="btn-yes" onclick="handleForgiven()" class="bg-gradient-to-r from-hotPink to-pink-500 hover:from-pink-600 hover:to-hotPink text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-pink-300/50 transform hover:scale-105 active:scale-95 transition-all text-sm sm:text-base flex items-center gap-2 z-20">
+                    <i class="fa-solid fa-heart"></i> Dimaafkan
+                </button>
+
+                <!-- Tombol "Tidak Dimaafkan" (Dodgeable) -->
+                <button id="btn-no" class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3 px-6 rounded-full shadow-md border border-gray-200 text-sm sm:text-base whitespace-nowrap z-30">
+                    Nggak Dimaafin 😜
+                </button>
+            </div>
+        </div>
+
+        <!-- CARD 2: HALAMAN SETELAH DIMAAFKAN (SUCCESS) -->
+        <div id="card-success" class="glass-card rounded-3xl p-6 sm:p-8 text-center relative overflow-hidden transition-all duration-500 transform scale-95 opacity-0 hidden">
+            
+            <div class="inline-block bg-green-100 text-emerald-600 text-xs font-bold px-4 py-1.5 rounded-full mb-4 border border-green-200 shadow-sm">
+                <i class="fa-solid fa-circle-check mr-1"></i> Asiiikk! Dimaafin! 🎉
+            </div>
+
+            <!-- Foto Kedua (Foto Bahagia/Senyum) -->
+            <div class="relative w-48 h-48 sm:w-56 sm:h-56 mx-auto mb-5 rounded-2xl p-2 bg-white photo-frame border-2 border-pink-200">
+                <img id="img-photo2" 
+                     src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=600&auto=format&fit=crop" 
+                     alt="Foto Bahagia Bersama" 
+                     class="w-full h-full object-cover rounded-xl shadow-inner">
+                <div class="absolute -bottom-3 -right-3 bg-white w-10 h-10 rounded-full flex justify-center items-center text-hotPink shadow-md text-lg">
+                    🥰
+                </div>
+            </div>
+
+            <!-- Teks Ucapan Terima Kasih -->
+            <h1 class="text-2xl sm:text-3xl font-bold text-hotPink mb-2 tracking-tight">
+                Makasih Banyak Sayang! <span class="inline-block heart-pulse">💖</span>
+            </h1>
+            <p id="text-success" class="text-sm sm:text-base text-gray-600 mb-6 leading-relaxed font-medium">
+                Yeeay! Makasih udah mau maafin aku. Sayang banget sama kamu! Janji ga bakal bikin cemberut lagi dehh! I Love You So Much! ✨💕
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-3">
+                <button onclick="triggerLoveConfetti()" class="w-full sm:w-auto bg-gradient-to-r from-pink-400 to-hotPink text-white font-bold py-2.5 px-6 rounded-full shadow-md hover:opacity-90 active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Ledakan Love Lagi ✨
+                </button>
+                <button onclick="resetToApology()" class="w-full sm:w-auto bg-white hover:bg-pink-50 text-hotPink border border-pink-300 font-bold py-2.5 px-5 rounded-full shadow-sm active:scale-95 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> Buka Lagi
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Note -->
+    <footer class="z-10 text-center pb-2">
+        <p class="text-xs text-pink-600/70 font-medium">
+            Dibuat dengan <i class="fa-solid fa-heart text-hotPink"></i> khusus untuk kamu
+        </p>
+    </footer>
+
+    <!-- MODAL / DRAWER PANEL KUSTOMISASI FOTO & AUDIO -->
+    <div id="modal-settings" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-center items-end sm:items-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white/95 backdrop-blur-md w-full max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl border border-pink-100 max-h-[85vh] overflow-y-auto transform translate-y-10 sm:translate-y-0 transition-transform duration-300">
+            
+            <div class="flex justify-between items-center mb-5 border-b border-pink-100 pb-3">
+                <h3 class="text-lg font-bold text-hotPink flex items-center gap-2">
+                    <i class="fa-solid fa-sliders"></i> Pengaturan Foto & Musik
+                </h3>
+                <button onclick="toggleSettingsModal()" class="w-8 h-8 rounded-full bg-pink-100 text-hotPink flex justify-center items-center hover:bg-pink-200 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-5 text-left text-xs sm:text-sm">
+                
+                <!-- Pengaturan Foto 1 -->
+                <div class="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-100">
+                    <label class="block font-bold text-gray-700 mb-1">
+                        📷 Foto 1 (Tampilan Permintaan Maaf)
+                    </label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="file" id="file-photo1" accept="image/*" class="hidden" onchange="handleFileUpload(event, 'img-photo1')">
+                        <button onclick="document.getElementById('file-photo1').click()" class="bg-hotPink text-white px-3 py-1.5 rounded-xl font-semibold hover:bg-pink-600 transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-upload"></i> Unggah File
+                        </button>
+                        <span class="text-gray-400 self-center text-xs">atau masukkan URL</span>
+                    </div>
+                    <input type="text" id="url-photo1" placeholder="https://link-foto-kamu-1.jpg" class="w-full px-3 py-2 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-hotPink/50 text-xs" onchange="handleUrlInput(this.value, 'img-photo1')">
+                </div>
+
+                <!-- Pengaturan Foto 2 -->
+                <div class="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-100">
+                    <label class="block font-bold text-gray-700 mb-1">
+                        🥰 Foto 2 (Tampilan Setelah Dimaafkan)
+                    </label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="file" id="file-photo2" accept="image/*" class="hidden" onchange="handleFileUpload(event, 'img-photo2')">
+                        <button onclick="document.getElementById('file-photo2').click()" class="bg-hotPink text-white px-3 py-1.5 rounded-xl font-semibold hover:bg-pink-600 transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-upload"></i> Unggah File
+                        </button>
+                        <span class="text-gray-400 self-center text-xs">atau masukkan URL</span>
+                    </div>
+                    <input type="text" id="url-photo2" placeholder="https://link-foto-kamu-2.jpg" class="w-full px-3 py-2 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-hotPink/50 text-xs" onchange="handleUrlInput(this.value, 'img-photo2')">
+                </div>
+
+                <!-- Custom Audio File / URL -->
+                <div class="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-100">
+                    <label class="block font-bold text-gray-700 mb-1">
+                        🎵 Musik Latar Belakang (Audio)
+                    </label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="file" id="file-audio" accept="audio/*" class="hidden" onchange="handleAudioUpload(event)">
+                        <button onclick="document.getElementById('file-audio').click()" class="bg-hotPink text-white px-3 py-1.5 rounded-xl font-semibold hover:bg-pink-600 transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-file-audio"></i> Unggah Audio
+                        </button>
+                        <span class="text-gray-400 self-center text-xs">atau gunakan URL MP3</span>
+                    </div>
+                    <input type="text" id="url-audio" placeholder="https://link-audio-kamu.mp3" class="w-full px-3 py-2 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-hotPink/50 text-xs" onchange="handleAudioUrlInput(this.value)">
+                </div>
+
+                <!-- Custom Text Inputs -->
+                <div class="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-100 space-y-2">
+                    <label class="block font-bold text-gray-700">
+                        ✍️ Ubah Pesan Maaf
+                    </label>
+                    <textarea id="input-text-apology" rows="2" class="w-full px-3 py-2 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-hotPink/50 text-xs" oninput="document.getElementById('text-apology').innerText = this.value">Aku tau aku bikin kamu kesel & kecewa. Aku janji bakal lebih ngertiin kamu dan ga ngulangin lagi. Beneran deh... Jangan marah lagi ya sayang? 🥺</textarea>
+                </div>
+
+            </div>
+
+            <button onclick="toggleSettingsModal()" class="w-full mt-5 bg-gradient-to-r from-hotPink to-pink-500 text-white font-bold py-2.5 rounded-2xl shadow-md hover:opacity-95 active:scale-95 transition-all text-sm">
+                Selesai & Simpan ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden HTML5 Audio Player -->
+    <audio id="bgm-audio" loop preload="auto"></audio>
+
+    <script>
+        /* --- STATE VARIABLES & REFERENCES --- */
+        const floatingContainer = document.getElementById('floating-container');
+        const btnNo = document.getElementById('btn-no');
+        const buttonWrapper = document.getElementById('button-wrapper');
+        const cardApology = document.getElementById('card-apology');
+        const cardSuccess = document.getElementById('card-success');
+        const bgmAudio = document.getElementById('bgm-audio');
+        const audioIcon = document.getElementById('audio-icon');
+
+        let isMusicPlaying = false;
+        let webAudioSynthContext = null;
+        let synthInterval = null;
+
+        // Message & Emoji Array for Floating Bottom Items
+        const floatingTexts = [
+            "Maafin ya 🥺", 
+            "Jangan marah ❤️", 
+            "I Love You 💕", 
+            "Plis dimaafkan 🙏", 
+            "Aku nyesel banget 😭",
+            "Sayang kamu ✨",
+            "❤️", "💖", "🥺", "✨", "🌸", "💕", "🧸"
+        ];
+
+        /* --- 1. FLOATING ANIMATION GENERATOR --- */
+        function spawnFloatingItem() {
+            const item = document.createElement('div');
+            item.className = 'floating-item';
+            
+            // Random Text or Emoji
+            const randomText = floatingTexts[Math.floor(Math.random() * floatingTexts.length)];
+            item.innerText = randomText;
+
+            // Random Horizontal Position (5vw to 90vw)
+            const randomX = Math.random() * 85 + 5;
+            item.style.left = `${randomX}vw`;
+
+            // Random Size (0.9rem to 1.6rem)
+            const randomSize = Math.random() * 0.7 + 0.9;
+            item.style.fontSize = `${randomSize}rem`;
+
+            // Random Animation Duration (6s to 11s)
+            const randomDuration = Math.random() * 5 + 6;
+            item.style.animationDuration = `${randomDuration}s`;
+
+            floatingContainer.appendChild(item);
+
+            // Clean up node after animation ends
+            setTimeout(() => {
+                if (item && item.parentNode) {
+                    item.parentNode.removeChild(item);
+                }
+            }, randomDuration * 1000);
+        }
+
+        // Continuously spawn floating items every 650ms
+        setInterval(spawnFloatingItem, 650);
+        // Initial batch
+        for (let i = 0; i < 6; i++) {
+            setTimeout(spawnFloatingItem, i * 200);
+        }
+
+        /* --- STREAMING_CHUNK:Implementing evading button physics... --- */
+        /* --- 2. DODGING / EVADING "TIDAK DIMAAFKAN" BUTTON LOGIC --- */
+        let isButtonDetached = false;
+
+        function dodgeButton(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // On first hover/touch, detach button from relative wrapper to absolute viewport position
+            if (!isButtonDetached) {
+                const rect = btnNo.getBoundingClientRect();
+                btnNo.style.position = 'fixed';
+                btnNo.style.left = `${rect.left}px`;
+                btnNo.style.top = `${rect.top}px`;
+                btnNo.style.zIndex = '999';
+                isButtonDetached = true;
+            }
+
+            const btnWidth = btnNo.offsetWidth || 140;
+            const btnHeight = btnNo.offsetHeight || 48;
+
+            // Keep margins from viewport edges
+            const padding = 24;
+            const maxX = window.innerWidth - btnWidth - padding;
+            const maxY = window.innerHeight - btnHeight - padding;
+
+            // Calculate new position ensuring it stays within viewport
+            let newX = Math.random() * (maxX - padding) + padding;
+            let newY = Math.random() * (maxY - padding) + padding;
+
+            // Apply smooth position update
+            btnNo.style.left = `${Math.max(padding, newX)}px`;
+            btnNo.style.top = `${Math.max(padding, newY)}px`;
+            btnNo.style.transform = `scale(1.05) rotate(${(Math.random() - 0.5) * 20}deg)`;
+
+            setTimeout(() => {
+                btnNo.style.transform = 'scale(1) rotate(0deg)';
+            }, 200);
+
+            // Play small audio trigger if music enabled
+            triggerCuteBeep();
+        }
+
+        // Attach multiple event listeners to make it impossible to click on both Desktop & Mobile
+        btnNo.addEventListener('mouseenter', dodgeButton);
+        btnNo.addEventListener('mouseover', dodgeButton);
+        btnNo.addEventListener('touchstart', dodgeButton, { passive: false });
+        btnNo.addEventListener('pointerover', dodgeButton);
+        btnNo.addEventListener('click', (e) => {
+            e.preventDefault();
+            dodgeButton(e);
+        });
+
+        /* --- STREAMING_CHUNK:Handling card transitions and love explosion... --- */
+        /* --- 3. FORGIVEN / SUCCESS CARD TRANSITION & CONFETTI --- */
+        function handleForgiven() {
+            // Trigger Love Explosion / Confetti
+            triggerLoveConfetti();
+
+            // Try playing audio if not playing yet
+            if (!isMusicPlaying) {
+                toggleAudio();
+            }
+
+            // Smooth Card Transition
+            cardApology.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                cardApology.classList.add('hidden');
+                cardSuccess.classList.remove('hidden');
+                
+                // Force Reflow
+                void cardSuccess.offsetWidth;
+
+                cardSuccess.classList.remove('scale-95', 'opacity-0');
+                cardSuccess.classList.add('scale-100', 'opacity-100');
+            }, 300);
+        }
+
+        function resetToApology() {
+            cardSuccess.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                cardSuccess.classList.add('hidden');
+                cardApology.classList.remove('hidden');
+
+                // Reset No Button if detached
+                if (isButtonDetached) {
+                    btnNo.style.position = 'relative';
+                    btnNo.style.left = 'auto';
+                    btnNo.style.top = 'auto';
+                    btnNo.style.zIndex = '30';
+                    isButtonDetached = false;
+                }
+
+                void cardApology.offsetWidth;
+
+                cardApology.classList.remove('scale-95', 'opacity-0');
+                cardApology.classList.add('scale-100', 'opacity-100');
+            }, 300);
+        }
+
+        function triggerLoveConfetti() {
+            if (typeof confetti === 'function') {
+                // Heart Shapes Confetti
+                const duration = 2.5 * 1000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 4,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 },
+                        colors: ['#ff477e', '#ff9ebb', '#ffffff', '#e91e63'],
+                        shapes: ['heart']
+                    });
+                    confetti({
+                        particleCount: 4,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 },
+                        colors: ['#ff477e', '#ff9ebb', '#ffffff', '#e91e63'],
+                        shapes: ['heart']
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                })();
+            }
+        }
+
+        /* --- STREAMING_CHUNK:Building Web Audio API fallback synthesizer & audio player... --- */
+        /* --- 4. AUDIO CONTROLLER & BUILT-IN SOOTHING SYNTHESIZER --- */
+        function toggleAudio() {
+            if (isMusicPlaying) {
+                // Pause Music
+                if (bgmAudio.src) {
+                    bgmAudio.pause();
+                } else {
+                    stopCuteSynth();
+                }
+                isMusicPlaying = false;
+                audioIcon.className = "fa-solid fa-music";
+                audioIcon.parentElement.classList.remove('bg-pink-200', 'ring-2', 'ring-hotPink');
+            } else {
+                // Play Music
+                if (bgmAudio.src && bgmAudio.src !== window.location.href) {
+                    bgmAudio.play().then(() => {
+                        isMusicPlaying = true;
+                        updateAudioUIPlaying();
+                    }).catch(() => {
+                        // Fallback to Web Audio Synth if audio element blocked or failed
+                        playCuteSynth();
+                    });
+                } else {
+                    playCuteSynth();
+                }
+            }
+        }
+
+        function updateAudioUIPlaying() {
+            isMusicPlaying = true;
+            audioIcon.className = "fa-solid fa-volume-high text-hotPink animate-bounce";
+            audioIcon.parentElement.classList.add('bg-pink-200', 'ring-2', 'ring-hotPink');
+        }
+
+        // Web Audio API Soft Lullaby Synth (Zero external audio file requirement fallback!)
+        function playCuteSynth() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!webAudioSynthContext) {
+                    webAudioSynthContext = new AudioCtx();
+                }
+                if (webAudioSynthContext.state === 'suspended') {
+                    webAudioSynthContext.resume();
+                }
+
+                // Soft Romantic Chord Progression (C - Am - F - G)
+                const notes = [261.63, 329.63, 392.00, 523.25, 440.00, 349.23, 392.00]; // C4, E4, G4, C5, A4, F4, G4
+                let noteIdx = 0;
+
+                if (synthInterval) clearInterval(synthInterval);
+
+                synthInterval = setInterval(() => {
+                    if (!isMusicPlaying) return;
+
+                    const osc = webAudioSynthContext.createOscillator();
+                    const gain = webAudioSynthContext.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(notes[noteIdx], webAudioSynthContext.currentTime);
+
+                    gain.gain.setValueAtTime(0.08, webAudioSynthContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, webAudioSynthContext.currentTime + 0.8);
+
+                    osc.connect(gain);
+                    gain.connect(webAudioSynthContext.destination);
+
+                    osc.start();
+                    osc.stop(webAudioSynthContext.currentTime + 0.85);
+
+                    noteIdx = (noteIdx + 1) % notes.length;
+                }, 400);
+
+                updateAudioUIPlaying();
+            } catch (err) {
+                console.log("Web Audio not supported or blocked");
+            }
+        }
+
+        function stopCuteSynth() {
+            if (synthInterval) clearInterval(synthInterval);
+        }
+
+        function triggerCuteBeep() {
+            if (!isMusicPlaying) return;
+            try {
+                if (webAudioSynthContext) {
+                    const osc = webAudioSynthContext.createOscillator();
+                    const gain = webAudioSynthContext.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(587.33, webAudioSynthContext.currentTime); // D5
+                    gain.gain.setValueAtTime(0.05, webAudioSynthContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, webAudioSynthContext.currentTime + 0.2);
+                    osc.connect(gain);
+                    gain.connect(webAudioSynthContext.destination);
+                    osc.start();
+                    osc.stop(webAudioSynthContext.currentTime + 0.2);
+                }
+            } catch (e) {}
+        }
+
+        /* --- STREAMING_CHUNK:Handling image uploads, URLs, and settings modal... --- */
+        /* --- 5. CUSTOMIZATION PANEL & FILE UPLOAD LOGIC --- */
+        function toggleSettingsModal() {
+            const modal = document.getElementById('modal-settings');
+            const isHidden = modal.classList.contains('pointer-events-none');
+
+            if (isHidden) {
+                modal.classList.remove('pointer-events-none', 'opacity-0');
+                modal.classList.add('opacity-100');
+                modal.firstElementChild.classList.remove('translate-y-10');
+            } else {
+                modal.classList.add('pointer-events-none', 'opacity-0');
+                modal.classList.remove('opacity-100');
+                modal.firstElementChild.classList.add('translate-y-10');
+            }
+        }
+
+        // Handle Image File Upload (FileReader DataURL)
+        function handleFileUpload(event, imgElementId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(imgElementId).src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Handle Image URL Direct Input
+        function handleUrlInput(url, imgElementId) {
+            if (url && url.trim() !== "") {
+                document.getElementById(imgElementId).src = url.trim();
+            }
+        }
+
+        // Handle Audio File Upload
+        function handleAudioUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const audioUrl = URL.createObjectURL(file);
+                bgmAudio.src = audioUrl;
+                stopCuteSynth();
+                toggleAudio(); // Start playing uploaded audio
+            }
+        }
+
+        // Handle Audio URL Input
+        function handleAudioUrlInput(url) {
+            if (url && url.trim() !== "") {
+                bgmAudio.src = url.trim();
+                stopCuteSynth();
+                toggleAudio();
+            }
+        }
+
+        // Touch event listener to start audio on user's first touch anywhere on screen
+        document.body.addEventListener('touchstart', function firstTouch() {
+            if (!isMusicPlaying) {
+                toggleAudio();
+            }
+            document.body.removeEventListener('touchstart', firstTouch);
+        }, { once: true });
+    </script>
+</body>
+</html>
